@@ -23,7 +23,6 @@ struct CatalogView: View {
                 VStack(spacing: 0) {
                     // Category chips
                     categoryChips
-
                     // Product grid
                     ScrollView {
                         LazyVGrid(
@@ -101,7 +100,7 @@ struct CatalogView: View {
             }
             .padding(.horizontal)
             .padding(.top, 12)
-            .padding(.bottom, 4)
+            .padding(.bottom, 12)
         }
     }
 

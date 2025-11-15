@@ -55,16 +55,11 @@ final class CatalogViewModel {
 
     // MARK: - Refresh & Pagination
 
-    /// Reset pagination and keep fetching pages until we actually have some items
-    /// for the current category (or the API is exhausted).
     func refresh() async {
         skip = 0
         canLoadMore = true
         items = []
-
-        repeat {
-            await loadNext()
-        } while items.isEmpty && canLoadMore
+        await loadNext()
     }
 
     func loadMoreIfNeeded(current item: Product) async {
@@ -73,37 +68,54 @@ final class CatalogViewModel {
         await loadNext()
     }
 
+    /// Fetches next pages until:
+    /// - we actually get some new items for the current filter, or
+    /// - the API runs out of products.
     private func loadNext() async {
         guard !loading, canLoadMore else { return }
 
         loading = true
         defer { loading = false }
 
+        var accumulated: [Product] = []
+        var localSkip = skip
+
         do {
-            let page = try await repo.fetchPage(
-                skip: skip,
-                limit: limit,
-                query: query.isEmpty ? nil : query
-            )
+            // Keep pulling pages until we get at least one item for this filter,
+            // or until DummyJSON has no more products.
+            while canLoadMore, accumulated.isEmpty {
+                let page = try await repo.fetchPage(
+                    skip: localSkip,
+                    limit: limit,
+                    query: query.isEmpty ? nil : query
+                )
 
-            // If the API returns no more products at all, stop paginating.
-            if page.products.isEmpty {
-                canLoadMore = false
-                return
+                // No more products at all → stop paginating.
+                if page.products.isEmpty {
+                    canLoadMore = false
+                    break
+                }
+
+                let filtered = page.products.filter { product in
+                    isLuxury(product) && matchesCategory(product)
+                }
+
+                accumulated.append(contentsOf: filtered)
+                localSkip += limit
             }
 
-            // Filter API data into "luxury-only" + current UI category
-            let filtered = page.products.filter { product in
-                isLuxury(product) && matchesCategory(product)
-            }
+            // If we found nothing new, just stop here (no UI update).
+            guard !accumulated.isEmpty else { return }
 
-            if skip == 0 {
-                items = filtered
+            if skip == 0 && items.isEmpty {
+                items = accumulated
             } else {
-                items += filtered
+                items += accumulated
             }
 
-            skip += limit
+            // Advance global skip to where our local loop ended.
+            skip = localSkip
+
         } catch {
             print("Load error:", error)
             canLoadMore = false
