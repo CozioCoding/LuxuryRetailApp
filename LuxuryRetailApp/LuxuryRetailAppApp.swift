@@ -25,9 +25,7 @@ struct LuxuryRetailApp: App {
 
     var body: some Scene {
         WindowGroup {
-            CatalogView()
-                .environment(cart)
-                .tint(.luxuryAccent)
+            HomeView()
         }
     }
 }
