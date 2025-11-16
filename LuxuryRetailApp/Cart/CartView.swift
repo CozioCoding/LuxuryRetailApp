@@ -6,7 +6,7 @@
 import SwiftUI
 
 struct CartView: View {
-    @Environment(CartStore.self) private var cart
+    @EnvironmentObject var cart: CartStore
 
     var body: some View {
         ZStack {
@@ -72,7 +72,7 @@ struct CartView: View {
 }
 
 private struct CartLineCard: View {
-    @Environment(CartStore.self) private var cart
+    @EnvironmentObject var cart: CartStore
     let line: CartStore.Line
 
     var body: some View {

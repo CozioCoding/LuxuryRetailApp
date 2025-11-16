@@ -6,17 +6,17 @@
 //
 
 import Foundation
-import Observation
+import Combine   // IMPORTANT
 
-@Observable
-final class CartStore {
+final class CartStore: ObservableObject {
     struct Line: Identifiable, Hashable {
         let id = UUID()
         let product: Product
         var qty: Int
         var lineTotal: Double { Double(qty) * product.price }
     }
-    var lines: [Line] = []
+
+    @Published var lines: [Line] = []
     var total: Double { lines.reduce(0) { $0 + $1.lineTotal } }
 
     func add(_ product: Product) {
@@ -26,6 +26,12 @@ final class CartStore {
             lines.append(.init(product: product, qty: 1))
         }
     }
-    func remove(_ line: Line) { lines.removeAll { $0.id == line.id } }
-    func clear() { lines.removeAll() }
+
+    func remove(_ line: Line) {
+        lines.removeAll { $0.id == line.id }
+    }
+
+    func clear() {
+        lines.removeAll()
+    }
 }

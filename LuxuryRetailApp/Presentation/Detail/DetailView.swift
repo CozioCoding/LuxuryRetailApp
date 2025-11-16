@@ -9,7 +9,7 @@ import SwiftUI
 
 struct DetailView: View {
     @State private var vm: DetailViewModel
-    @Environment(CartStore.self) private var cart
+    @EnvironmentObject var cart: CartStore
 
     init(id: Int) { _vm = .init(initialValue: DetailViewModel(id: id)) }
 
@@ -26,8 +26,6 @@ struct DetailView: View {
                                         .scaledToFill()
                                         .frame(height: 340)
                                         .clipped()
-                                        .overlay(LinearGradient(colors: [.black.opacity(0), .black.opacity(0.35)],
-                                                                startPoint: .center, endPoint: .bottom))
                                         .clipShape(RoundedRectangle(cornerRadius: 24))
                                 }
                             }
@@ -51,7 +49,9 @@ struct DetailView: View {
                             } label: {
                                 HStack {
                                     Image(systemName: "bag.fill")
+                                        .foregroundStyle(Color.luxuryAccent)
                                     Text("Add to Bag")
+                                        .foregroundStyle(Color.luxuryAccent)
                                 }
                                 .frame(maxWidth: .infinity)
                                 .padding()

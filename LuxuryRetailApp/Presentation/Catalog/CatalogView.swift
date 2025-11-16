@@ -9,7 +9,7 @@ import SwiftUI
 
 struct CatalogView: View {
     @State private var vm = CatalogViewModel()
-    @Environment(CartStore.self) private var cart
+    @EnvironmentObject var cart: CartStore
 
     @State private var showFilters = false
     @State private var sortOption: CatalogSortOption = .priceLowToHigh
@@ -25,77 +25,72 @@ struct CatalogView: View {
     ]
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                LuxuryGradient()
-                    .ignoresSafeArea()
+        ZStack {
+            LuxuryGradient()
+                .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    CatalogCategoryChips(
-                        selectedCategory: vm.category,
-                        onSelect: { vm.category = $0 }
-                    )
-
-                    content
-                }
-            }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    Text("Maison Étoile")
-                        .font(.system(size: 22, weight: .semibold, design: .serif))
-                        .tracking(1.0)
-                        .foregroundStyle(Color.luxuryAccent)
-                }
-
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button {
-                        showFilters = true
-                    } label: {
-                        Image(systemName: "slider.horizontal.3")
-                            .imageScale(.medium)
-                    }
-                    .foregroundStyle(.white)
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    CartButton()
-                }
-            }
-            .searchable(text: $vm.query, prompt: "Search brand or product")
-            .onChange(of: vm.query) { _, _ in
-                refresh()
-            }
-            .onChange(of: vm.category) { _, _ in
-                refresh()
-            }
-            .onChange(of: vm.items) { _, newValue in
-                let max = newValue.map { $0.price }.max() ?? 500
-                maxPrice = max
-                if priceRange.upperBound < max {
-                    priceRange = priceRange.lowerBound...max
-                }
-            }
-            .task {
-                refresh()
-            }
-            .sheet(isPresented: $showFilters) {
-                CatalogFilterSheet(
-                    sortOption: $sortOption,
-                    priceRange: $priceRange,
-                    maxPrice: maxPrice,
-                    onReset: {
-                        sortOption = .priceLowToHigh
-                        priceRange = 0...maxPrice
-                    },
-                    onDone: {
-                        showFilters = false
-                    }
+            VStack(spacing: 0) {
+                CatalogCategoryChips(
+                    selectedCategory: vm.category,
+                    onSelect: { vm.category = $0 }
                 )
+
+                content
             }
-            .navigationDestination(for: Int.self) { id in
-                DetailView(id: id)
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Maison Étoile")
+                    .font(.system(size: 22, weight: .semibold, design: .serif))
+                    .tracking(1.0)
+                    .foregroundStyle(Color.luxuryAccent)
             }
+
+            ToolbarItem(placement: .navigationBarLeading) {
+                Button {
+                    showFilters = true
+                } label: {
+                    Image(systemName: "slider.horizontal.3")
+                        .imageScale(.medium)
+                }
+                .foregroundStyle(.white)
+            }
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                CartButton()
+            }
+        }
+        .searchable(text: $vm.query, prompt: "Search brand or product")
+        .onChange(of: vm.query) { _, _ in
+            refresh()
+        }
+        .onChange(of: vm.category) { _, _ in
+            refresh()
+        }
+        .onChange(of: vm.items) { _, newValue in
+            let max = newValue.map { $0.price }.max() ?? 500
+            maxPrice = max
+            if priceRange.upperBound < max {
+                priceRange = priceRange.lowerBound...max
+            }
+        }
+        .task {
+            refresh()
+        }
+        .sheet(isPresented: $showFilters) {
+            CatalogFilterSheet(
+                sortOption: $sortOption,
+                priceRange: $priceRange,
+                maxPrice: maxPrice,
+                onReset: {
+                    sortOption = .priceLowToHigh
+                    priceRange = 0...maxPrice
+                },
+                onDone: {
+                    showFilters = false
+                }
+            )
         }
     }
 
@@ -136,7 +131,9 @@ struct CatalogView: View {
                     spacing: 16
                 ) {
                     ForEach(filteredAndSortedItems) { item in
-                        NavigationLink(value: item.id) {
+                        NavigationLink {
+                            DetailView(id: item.id)
+                        } label: {
                             ProductCard(product: item)
                                 .transition(.opacity.combined(with: .scale))
                         }

@@ -4,18 +4,10 @@
 //
 //  Created by user279259 on 12/11/2025.
 //
-
-import SwiftUI
-
-//
-//  CartView.swift
-//  LuxuryRetailApp
-//
-
 import SwiftUI
 
 struct CartButton: View {
-    @Environment(CartStore.self) private var cart
+    @EnvironmentObject var cart: CartStore
 
     var body: some View {
         NavigationLink {
