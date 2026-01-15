@@ -114,7 +114,7 @@ LuxuryRetailApp/
 ```
 
 Clone the repository:
-git clone https://github.com/USERNAME/LuxuryRetailApp.git
+git clone https://github.com/CozioCoding/LuxuryRetailApp.git
 
 Open the project:
 open LuxuryRetailApp.xcodeproj
